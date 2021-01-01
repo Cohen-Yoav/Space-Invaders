@@ -1,5 +1,4 @@
 import pygame
-#from main import collide
 
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x

@@ -1,8 +1,8 @@
 import pygame
 import os
-import time
 import random
 from SpaceShip import *
+from Lasers import collide
 
 ## initaing the font
 pygame.font.init()
@@ -28,10 +28,9 @@ def main():
     clock = pygame.time.Clock()
     
     # player variables
-    lives = 500
+    lives = 5
     player_speed = 5
-    # player = Player_Ship(int(WIDTH / 2), HEIGHT - int(11*PLAYER_SHIP.get_height()/10))
-    player = Player_Ship(350, 400)
+    player = Player_Ship(int(WIDTH / 2), HEIGHT - int(11*PLAYER_SHIP.get_height()/10) - 10)
     laser_speed = 4
     
     # enemy variables    
@@ -47,11 +46,10 @@ def main():
         level_label = main_font.render(f"Level: {lvl}", 1, (255, 255, 255))
         WINDOW.blit(lives_label, (10, 10))
         WINDOW.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
-        
+        # draw enemy space ship
         for enemy in enemies:
-            enemy.draw(WINDOW)
-            
-        # draw the ship
+            enemy.draw(WINDOW)     
+        # draw the player ship
         player.draw(WINDOW)
         # draw the lost label
         if lost == True:
@@ -60,6 +58,7 @@ def main():
             
         pygame.display.update()
     
+    # game main loop
     while Active:
         clock.tick(Frames_Per_Second)
         redraw_window()
@@ -69,18 +68,17 @@ def main():
             lost = True
             lost_counter += 1
         
-        # lost label show for 3 seconde and quit
+        # lost label show for 2 seconde and go back to main menu
         if lost:
-            if lost_counter > Frames_Per_Second * 3:
+            if lost_counter > Frames_Per_Second * 2:
                 Active = False
             else:
                 continue
-
-        
+     
         # level && number of enemies update
         if len(enemies) == 0:
             lvl += 1
-            wave_length += 5
+            wave_length += random.randrange(1, 6)
             # respawn enemies
             for i in range(wave_length):
                 enemy = Enemey_Ship(random.randrange(50, WIDTH - 50), random.randrange(-1500, -100), random.choice(["red", "blue", "green"]), random.randrange(1, 5))
@@ -92,34 +90,53 @@ def main():
 
         # movment keys
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and player.x - player_speed > 0:                              # left
+        if keys[pygame.K_LEFT] and player.x - player_speed > 0:                                 # left
             player.x -= player_speed
-        if keys[pygame.K_RIGHT] and player.x + player_speed + player.get_width() < WIDTH:    # right
+        if keys[pygame.K_RIGHT] and player.x + player_speed + player.get_width() < WIDTH:       # right
             player.x += player_speed
-        if keys[pygame.K_UP] and player.y - player_speed > 0:                                # up
+        if keys[pygame.K_UP] and player.y - player_speed > 0:                                   # up
             player.y -= player_speed
-        if keys[pygame.K_DOWN] and player.y + player_speed + player.get_height() < HEIGHT:   # down
+        if keys[pygame.K_DOWN] and player.y + player_speed + player.get_height() + 10 < HEIGHT: # down
             player.y += player_speed
-        if keys[pygame.K_SPACE]:                                                             # shoot
+        if keys[pygame.K_SPACE]:                                                                # shoot
             player.shoot()
         
         # make the enemies move
         for enemy in enemies[:]:
             enemy.move()
-            enemy.move_lasers(laser_speed, player)
+            enemy.move_lasers(enemy.speed + 1, player)
             
             #randomize the enemy shooting 
             if random.randrange(0, shooting_probability*Frames_Per_Second) == 1:
                 enemy.shoot()
             
-            # check if the enemy ship got passed us
-            if enemy.y + enemy.get_height() > HEIGHT:
-                lives -= 1
+            # handle collisions
+            if collide(enemy, player):
+                player.health -= 10
                 enemies.remove(enemy)
             
-            # handle collisions
-            
+            # check if the enemy ship got passed us
+            elif enemy.y + enemy.get_height() > HEIGHT:
+                lives -= 1
+                enemies.remove(enemy)
+                  
         # handle the player lasers movement     
         player.move_lasers(-laser_speed, enemies)
+
+def main_menu():
+    title_font = pygame.font.SysFont("comicsasns", 60)
+    title_label =title_font.render("Press Mouse to begin", 1, (255, 255, 255))
+    run = True
+    while run:
+        WINDOW.blit(BACK_GROUND,(0,0))
+        WINDOW.blit(title_label, ((WIDTH - title_label.get_width())/2, HEIGHT/2))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                main()
+    
+    pygame.quit()
        
-main()
+main_menu()

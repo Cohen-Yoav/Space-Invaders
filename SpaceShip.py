@@ -32,8 +32,6 @@ class Ship:
         window.blit(self.ship_img, (self.x, self.y))
         for laser in self.lasers:
             laser.draw(window)
-        # pygame.draw.rect(window, (255, 0, 0), (self.x, self.y + self.ship_img.get.height() + 10), self.ship_img.get.width(), 10)
-        # pygame.draw.rect(window, (0, 255, 0), (self.x, self.y + self.ship_img.get.height() + 10), self.ship_img.get.width() * (self.health / self.max_health), 10)
     
     def move_lasers(self, speed, obj):
         self.cooldown()
@@ -82,8 +80,18 @@ class Player_Ship(Ship):
                 for obj in objs:
                     if laser.collision(obj):
                         objs.remove(obj)
-                        self.lasers.remove(laser)
-        
+                        if laser in self.lasers:
+                            self.lasers.remove(laser)
+                        
+    def healthbar(self, window):
+        pygame.draw.rect(window, (255, 0, 0), (self.x, self.y + self.ship_img.get_height() + 5, self.ship_img.get_width(), 5))
+        pygame.draw.rect(window, (0, 255, 0), (self.x, self.y + self.ship_img.get_height() + 5, self.ship_img.get_width() * (self.health / self.max_health), 5))    
+
+    def draw(self, window):
+        super().draw(window)
+        self.healthbar(window)
+    
+    
 class Enemey_Ship(Ship):
     COLOR_MAP = {
         "red" : (ENEMY_RED_SHIP, ENEMY_RED_LASER),
