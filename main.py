@@ -3,6 +3,8 @@ import os
 import random
 from SpaceShip import *
 from Lasers import collide
+from pygame.locals import *
+pygame.init()
 
 ## initaing the font
 pygame.font.init()
